@@ -1,97 +1,57 @@
-/**
- * @jsx React.DOM
- */
+var ReactCSSTransitionGroup = require('react-addons-css-transition-group');
+var React = require("react");
+var ReactDOM = require("react-dom");
 
-var React              = require('react/addons');
-var Router             = require('react-router-component');
-var Location           = Router.Location;
-var Link               = Router.Link;
-var AnimatedLocations  = require('./index');
+var Item = React.createClass({
+    render: function () {
+        return (
+            <div className="item">{this.props.children}</div>
+        );
+    }
+});
 
 
-var App = React.createClass({
-  render: function() {
-    return (
-      <AnimatedLocations hash className="Main" transitionName="moveUp" popStateTransitionName="fade">
-        <Location path="/" handler={MainPage} />
-        <Location path="/about" handler={AboutPage} />
-      </AnimatedLocations>
-    )
-  }
-})
+var TodoList = React.createClass({
+    getInitialState: function () {
+        return {items: ["hello", "world"]};
+    },
+    handleAdd: function () {
+        var newItems =
+            this.state.items.concat([prompt('Enter some text')]);
+        this.setState({items: newItems});
+    },
+    handleRemove: function (i) {
+        var newItems = this.state.items;
+        newItems.splice(i, 1);
+        this.setState({items: newItems});
+    },
+    render: function () {
 
-var MainPage = React.createClass({
-  render: function() {
-    return (
-      <div className="MainPage Page">
-        <div className="Page__wrapper">
-          <h1>Main page</h1>
-          <p>
-            This demo shows how to do <a href={githubHref}>animated page
-            transitions</a> with <a href={rrcHref}>React Router component</a>.
-          </p>
-          <p>
-            All you need is to use <code>AnimatedLocations</code> router:
-          </p>
-          <pre>{[
-            '<AnimatedLocations className="Main" transitionName="moveUp" popStateTransitionName="fade">',
-            '  <Location path="/" handler={MainPage} />',
-            '  <Location path="/about" handler={AboutPage} />',
-            '</AnimatedLocations>'
-          ].join('\n')}</pre>
-          <p>
-            Now, click on a link to go to <Link href="/about">about page</Link>.
-          </p>
-        </div>
-      </div>
-    )
-  }
-})
+        var items = [];
+        for(var i = 0 ; i < this.state.items.length ; i++) {
+            var item = this.state.items[i];
+            items.push(
+                <Item key={item}>
+                    <div onClick={this.handleRemove.bind(this, i)}>
+                        {item}
+                    </div>
+                </Item>
+            );
+        }
+        return (
+            <div>
+                <button onClick={this.handleAdd}>Add Item</button>
+                <ReactCSSTransitionGroup
+                                         transitionAppear={true}
+                                         transitionName="example"
+                                         transitionLeaveTimeout={5000}
+                                         transitionEnterTimeout={5000}
+                                         component="div">
+                    {items}
+                </ReactCSSTransitionGroup>
+            </div>
+        );
+    }
+});
 
-var AboutPage = React.createClass({
-  render: function() {
-    return (
-      <div className="AboutPage Page">
-        <div className="Page__wrapper">
-          <h1>About</h1>
-          <p>Then specify your CSS3 Transition in stylesheet:</p>
-          <pre>{[
-            '.moveUp-enter {',
-            '  ...',
-            '}',
-            '',
-            '.moveUp-enter.moveUp-enter-active {',
-            '  ...',
-            '}',
-            '',
-            '.moveUp-leave {',
-            '  ...',
-            '}',
-            '',
-            '.moveUp-leave.moveUp-leave-active {',
-            '  ...',
-            '}',
-          ].join('\n')}</pre>
-          <p>
-            Go back to <Link transitionName="moveDown" href="/">main page
-            </Link> (please notice it uses another kind of animated transition).
-          </p>
-          <p>
-            This link will lead to <Link noTransition transitionName="moveDown" href="/">main page
-            </Link> too but with no animated transition.
-          </p>
-          <p>
-            You can also use the back/forward buttons in your browser. <br />
-            Back/forward actions will use the <code>popStateTransitionName</code> specified in the props. <br />
-            It is set to a fade transition in this demo. If none is specified, no animation will be used.
-          </p>
-        </div>
-      </div>
-    )
-  }
-})
-
-var rrcHref = "http://andreypopp.viewdocs.io/react-router-component";
-var githubHref = "https://github.com/andreypopp/react-router-page-transition";
-
-React.render(React.createElement(App), document.body);
+ReactDOM.render(<TodoList/>, document.getElementById("app"));
